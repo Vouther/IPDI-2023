@@ -229,3 +229,4 @@ def mostrar_imagen(imagen):
     plt.imshow(imagen)
     plt.title("Imágen Procesada")
     plt.axis('off')
+    plt.show()

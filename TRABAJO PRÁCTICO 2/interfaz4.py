@@ -18,13 +18,7 @@ def manipulate_image():
     im2 = ope.normalize_rgb(im2)
 
     if seleccion == "Suma Clampeada RGB":
-        aux = ope.suma_clampeada_rgb(im1,im2)
-        print('Suma exitosa',aux)
-        aux = ope.RGB_to_bytes(aux)
-        print('Normalizacion',aux)
-        plt.imshow(aux)
-        plt.title("Imágen Procesada")
-        plt.axis('off')
+        ope.mostrar_imagen(ope.RGB_to_bytes(ope.suma_clampeada_rgb(im1,im2)))
     elif seleccion == "Resta Clampeada RGB":
         ope.mostrar_imagen(ope.RGB_to_bytes(ope.resta_clampeada_rgb(im1,im2)))
     elif seleccion == "Suma Promediada RGB":
