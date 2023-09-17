@@ -17,6 +17,10 @@ def manipulate_image():
     im1 = ope.normalize_rgb(im1)
     im2 = ope.normalize_rgb(im2)
 
+    yiq1 = ope.RGB_to_YIQ(im1)
+    yiq2 = ope.RGB_to_YIQ(im2)
+    yiq3 = ope.copia_nula(im1)
+
     if seleccion == "Suma Clampeada RGB":
         ope.mostrar_imagen(ope.RGB_to_bytes(ope.suma_clampeada_rgb(im1,im2)))
     elif seleccion == "Resta Clampeada RGB":
@@ -25,6 +29,26 @@ def manipulate_image():
         ope.mostrar_imagen(ope.RGB_to_bytes(ope.suma_promediada_rgb(im1,im2)))
     elif seleccion == "Resta Promediada RGB":
         ope.mostrar_imagen(ope.RGB_to_bytes(ope.resta_promediada_rgb(im1,im2)))
+    elif seleccion == "Suma Clampeada YIQ":
+        yiq3[:, :, 0] = ope.suma_clampeada(yiq1,yiq2)
+        yiq3[:, :, 1] , yiq3[:, :, 2] = ope.interpolacion(yiq1,yiq2)
+        ope.mostrar_imagen(ope.RGB_to_bytes(ope.YIQ_to_RGB(ope.check_yiq(yiq3))))
+    elif seleccion == "Resta Clampeada YIQ":
+        yiq3[:, :, 0] = ope.resta_clampeada(yiq1,yiq2)
+        yiq3[:, :, 1] , yiq3[:, :, 2] = ope.interpolacion(yiq1,yiq2)
+        ope.mostrar_imagen(ope.RGB_to_bytes(ope.YIQ_to_RGB(ope.check_yiq(yiq3))))
+    elif seleccion == "Suma Promediada YIQ":
+        yiq3[:, :, 0] = ope.suma_promediada(yiq1,yiq2)
+        yiq3[:, :, 1] , yiq3[:, :, 2] = ope.interpolacion(yiq1,yiq2)
+        ope.mostrar_imagen(ope.RGB_to_bytes(ope.YIQ_to_RGB(ope.check_yiq(yiq3))))
+    elif seleccion == "Resta Promediada YIQ":
+        yiq3[:, :, 0] = ope.resta_promediada(yiq1,yiq2)
+        yiq3[:, :, 1] , yiq3[:, :, 2] = ope.interpolacion(yiq1,yiq2)
+        ope.mostrar_imagen(ope.RGB_to_bytes(ope.YIQ_to_RGB(ope.check_yiq(yiq3))))
+    elif seleccion == "If Ligther":
+        ope.mostrar_imagen(ope.RGB_to_bytes(ope.YIQ_to_RGB(ope.check_yiq(ope.if_lighter(yiq1,yiq2)))))
+    elif seleccion == "If Darker":
+        ope.mostrar_imagen(ope.RGB_to_bytes(ope.YIQ_to_RGB(ope.check_yiq(ope.if_darker(yiq1,yiq2)))))
     else:
         mensaje = f"Debes selecionar una de las opciones"
         messagebox.showinfo("Identificación", mensaje)
@@ -73,6 +97,10 @@ opciones = ["Suma Clampeada RGB",
             "Resta Clampeada RGB",
             "Suma Promediada RGB",
             "Resta Promediada RGB",
+            "Suma Clampeada YIQ",
+            "Resta Clampeada YIQ",
+            "Suma Promediada YIQ",
+            "Resta Promediada YIQ",
             "If Ligther","If Darker"]
 combobox = ttk.Combobox(frame, values=opciones, state="readonly")
 combobox.set("Seleccione una opción")  # Texto predeterminado en el Combobox

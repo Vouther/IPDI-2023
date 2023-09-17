@@ -55,6 +55,10 @@ def igualar_dimensiones(image_1,image_2):
 
     return im1,im2
 
+def copia_nula(imagen):
+    yiq3 = np.zeros(imagen.shape)
+    return yiq3
+
 #OPERACIONES EN EL ESPACIO RGB ************************************************
 
 #SUMA CLAMPEADA EN EL ESPACIO RGB
