@@ -2,7 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+from tkinter import simpledialog
 from PIL import Image, ImageTk, ImageFilter
+import imageio.v2 as imageio
+import operaciones_img as ope
 
 '''MAT_YIQ = np.array([0.299, 0.595716, 0.211456],
                    [0.587, -0.274453, -0.522591],
@@ -11,28 +14,67 @@ from PIL import Image, ImageTk, ImageFilter
 def rgbtoyiq(_im):
     return (_im.reshape((-1,1))@MAT_YIQ).reshape(_im.shape)'''
 
+def get_ymin_ymax(yiq):
+    ventana2 = tk.Tk()
+    ventana2.title("Valores ymin y ymax")
+    ventana2.geometry("200x100")  # Cambia el tamaño de la ventana
+
+    ymin_label = tk.Label(ventana2, text="ymin:")
+    ymin_label.grid(row=0, column=0, padx=10, pady=5)  # Ajuste del espaciado
+    ymin_entry = tk.Entry(ventana2)
+    ymin_entry.grid(row=0, column=1, padx=10, pady=5)  # Ajuste del espaciado
+
+    ymax_label = tk.Label(ventana2, text="ymax:")
+    ymax_label.grid(row=1, column=0, padx=10, pady=5)  # Ajuste del espaciado
+    ymax_entry = tk.Entry(ventana2)
+    ymax_entry.grid(row=1, column=1, padx=10, pady=5)  # Ajuste del espaciado
+
+    def submit_values():
+        ymin = float(ymin_entry.get())
+        ymax = float(ymax_entry.get())
+        ventana2.destroy()  # Cierra la ventana después de recopilar los valores
+        if not (ymin < ymax):
+            messagebox.showerror("Error", "ymin debe ser menor que ymax")
+        else:
+            perform_operation_with_ymin_ymax(yiq,ymin, ymax)
+
+    submit_button = tk.Button(ventana2, text="Aceptar", command=submit_values)
+    submit_button.grid(row=2, columnspan=2, pady=10)  # Ajuste del espaciado
+
+    ventana2.mainloop()
+
+
+def perform_operation_with_ymin_ymax(yiq,ymin, ymax):
+    # Realizamos la operación con los valores ymin y ymax
+    rgb_result = ope.YIQ_to_RGB(ope.check_yiq(ope.lineal_a_tarzos(yiq,ymin,ymax)))
+    ope.mostrar_imagen(rgb_result,ope.RGB_to_bytes(rgb_result))
+
 def manipulate_image():
     seleccion = combobox.get()
-    '''if seleccion:
-        mensaje = f"Seleccionaste la operacion {seleccion}"
-        messagebox.showinfo("Identificación", mensaje)'''
-    #im1 = imageio.imread('bosque.bmp')
 
-    if seleccion == "Raiz":
-        mensaje = f"Seleccionaste la operacion Raiz"
-        messagebox.showinfo("Identificación", mensaje)
-    elif seleccion == "Cuadrado":
-        mensaje = f"Seleccionaste la operacion Cuadrado"
-        messagebox.showinfo("Identificación", mensaje)
-    elif seleccion == "Trazos":
-        mensaje = f"Seleccionaste la operacion Trazos"
-        messagebox.showinfo("Identificación", mensaje)
+    if image_path != "":
+        img = imageio.imread(image_path)
+        img = ope.normalize_rgb(img)
+        yiq = ope.RGB_to_YIQ(img)
+
+        if seleccion == "Raiz":
+            rgb_result = ope.YIQ_to_RGB(ope.check_yiq(ope.raiz_cuadrada(yiq)))
+            ope.mostrar_imagen(rgb_result, ope.RGB_to_bytes(rgb_result))
+        elif seleccion == "Cuadrado":
+            rgb_result = ope.YIQ_to_RGB(ope.check_yiq(ope.cuadratica(yiq)))
+            ope.mostrar_imagen(rgb_result,ope.RGB_to_bytes(rgb_result))
+        elif seleccion == "Trazos":
+            get_ymin_ymax(yiq)  # Esta función abre una ventana personalizada
+        else:
+            mensaje = f"Debes selecionar una de las opciones"
+            messagebox.showinfo("Identificación", mensaje)
     else:
-        mensaje = f"Debes selecionar una de las opciones"
+        mensaje = "Debes abrir una imagen para manipular."
         messagebox.showinfo("Identificación", mensaje)
 
 def cerrar_aplicacion():
     ventana.quit()
+    ventana.destroy() #Liberación de recursos y cierre adecuado
 
 def open_image():
     global image_path

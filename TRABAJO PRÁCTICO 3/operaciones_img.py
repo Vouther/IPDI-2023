@@ -225,10 +225,41 @@ def if_darker(image_A, image_B):
 
     return image_C
 
-def mostrar_imagen(imagen):
-    plt.imshow(imagen)
-    plt.title("Imágen Procesada")
-    plt.axis('off')
+def mostrar_imagen(rgb, imagen):
+    # Creamos una figura con dos subgráficos
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 3))
+
+    # Mostramos la imagen en el primer subgráfico
+    ax1.imshow(imagen)
+    ax1.set_title("Imágen Procesada")
+
+    # Mostramos el histograma en el segundo subgráfico
+    histogram, bins = np.histogram(rgb.flatten(), bins=10, range=(0, 1))
+    ax2.bar(bins[:-1], histogram, width=0.1, align='center', alpha=0.7)
+    ax2.set_title("Histograma")
+    ax2.set_xlabel("Valor de píxel normalizado")
+    ax2.set_ylabel("Frecuencia")
+    ax2.set_xticks(bins[:-1])
+    ax2.grid(True)
+
+    # Ajustamos el espacio entre los subgráficos
+    plt.tight_layout()
+
+    # Mostramos la figura
     plt.show()
 
-    
+
+def raiz_cuadrada(yiq):
+    yiq[:, :, 0] = np.sqrt(yiq[:, :, 0])
+    return yiq
+
+def cuadratica(yiq):
+    yiq[:, :, 0] = yiq[:, :, 0] * yiq[:, :, 0]
+    return yiq
+
+def lineal_a_tarzos(yiq,ymin,ymax):
+    yiq[:, :, 0][yiq[:, :, 0] < ymin] = 0
+    yiq[:, :, 0][yiq[:, :, 0] > ymax] = 1
+    return yiq
+
+
