@@ -267,4 +267,63 @@ def lineal_a_tarzos(yiq,ymin,ymax):
     yiq[:, :, 0][yiq[:, :, 0] > ymax] = 1
     return yiq
 
+#PROCESAMIENTO POR CONVOLUCION
+def bartlett_kernel(size):
+    if size % 2 == 0:
+        raise ValueError("El tamaño del kernel debe ser impar.")
 
+    kernel = np.zeros((size, size))
+    mid = size // 2
+
+    for x, y in np.ndindex((mid + 1, mid + 1)):
+        kernel[x, y] = (y + 1) * (x + 1)
+
+    kernel[:mid + 1, mid + 1:] = np.flip(kernel[:mid + 1, :mid], axis=1)
+    kernel[mid + 1:, :] = np.flip(kernel[:mid, :], axis=0)
+
+    return kernel
+def gaussiano_kernel(dim):
+    if dim <= 0:
+        raise ValueError("La dimensión debe ser mayor que 0")
+
+    ar = np.array([1])
+
+    while len(ar) < dim:
+        f = np.ones(len(ar) + 1)
+        f[1:-1] = ar[:-1] + ar[1:]
+        ar = f
+
+    return ar.reshape(-1, 1) * ar
+
+def laplaciano_kernel(v):
+    kernel = None
+    if v==4:
+        kernel = np.zeros((3,3))
+        kernel[1,:] = -1
+        kernel[:,1] = -1
+        kernel[1,1] = 4
+    if v==8:
+        kernel = np.ones((3,3))*(-1)
+        kernel[1,1] = 8
+    return kernel
+
+
+def sobel_kernel(orientacion):
+    f = np.array([1, 2, 1])
+    kernel = np.zeros((3, 3))
+    f_flat = f.flatten()  # Convertmos 'f' en un array unidimensional
+
+    if orientacion == 'Oeste':
+        kernel[:, 0] = f_flat * (-1)
+        kernel[:, 2] = f_flat
+    elif orientacion == 'Este':
+        kernel[:, 0] = f_flat
+        kernel[:, 2] = f_flat * (-1)
+    elif orientacion == 'Norte':
+        kernel[0, :] = f_flat * (-1)
+        kernel[2, :] = f_flat
+    else:
+        kernel[0, :] = f_flat
+        kernel[2, :] = f_flat * (-1)
+
+    return kernel
