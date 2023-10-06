@@ -2,10 +2,14 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
-from tkinter import simpledialog
-from PIL import Image, ImageTk, ImageFilter
+from tkinter import PhotoImage
+from PIL import Image, ImageTk
 import imageio.v2 as imageio
 import operaciones_img as ope
+import re
+import numpy as np
+import datetime  # Importa el módulo datetime
+
 
 '''MAT_YIQ = np.array([0.299, 0.595716, 0.211456],
                    [0.587, -0.274453, -0.522591],
@@ -14,23 +18,64 @@ import operaciones_img as ope
 def rgbtoyiq(_im):
     return (_im.reshape((-1,1))@MAT_YIQ).reshape(_im.shape)'''
 
+def generar_imagen(imagen):
+    # Generarmos un nombre de archivo único basado en la fecha y hora actual
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    nombre_archivo = f"imagen_filtrada_{timestamp}.ppm"
+
+    # Guardarmos la imagen filtrada en formato PPM con el nombre único
+    imageio.imwrite(nombre_archivo, imagen)
+
+    # Cargamos la imagen filtrada en PhotoImage y mostramos en el Label
+    imagen_tk = ImageTk.PhotoImage(file=nombre_archivo)
+    label_imagen2.config(image=imagen_tk)
+    label_imagen2.image = imagen_tk
+def obtener_numero(cadena):
+    # Utilizarmos una expresión regular para buscar el último número en la cadena
+    numero = re.search(r'\d+$', cadena)
+    if numero:
+        return int(numero.group())  # Convertirmos el número encontrado a entero
+    else:
+        return None  # Devolvermos None si no se encontró ningún número
 def manipulate_image():
     seleccion = combobox.get()
+    primera_palabra = seleccion.split()[0]
 
     if image_path != "":
         img = imageio.imread(image_path)
         img = ope.normalize_rgb(img)
-        yiq = ope.RGB_to_YIQ(img)
+        #yiq = ope.RGB_to_YIQ(img)
+        numero = obtener_numero(seleccion)
 
-        if seleccion == "Raiz":
-            mensaje = f"Debes selecionar una de las opciones"
-            messagebox.showinfo("Identificación", mensaje)
-        elif seleccion == "Cuadrado":
-            mensaje = f"Debes selecionar una de las opciones"
-            messagebox.showinfo("Identificación", mensaje)
-        elif seleccion == "Trazos":
-            mensaje = f"Debes selecionar una de las opciones"
-            messagebox.showinfo("Identificación", mensaje)
+        if primera_palabra == "Bartlett":
+            bartlett = ope.bartlett_kernel(numero)
+            #ope.mostrar_imagen(ope.aplicar_filtro(img,bartlett))
+
+            imagen_filtrada = ope.aplicar_filtro(img,bartlett).astype(np.uint8)  # Combinamos canales y convertimos a uint8
+            generar_imagen(imagen_filtrada)
+
+        elif primera_palabra == "Gaussiano":
+            gausiano = ope.gaussiano_kernel(numero)
+            #ope.mostrar_imagen(ope.aplicar_filtro(img,gausiano))
+
+            imagen_filtrada = ope.aplicar_filtro(img,gausiano).astype(np.uint8)  # Combinamos canales y convertimos a uint8
+            generar_imagen(imagen_filtrada)
+
+        elif primera_palabra == "Laplaciano":
+            laplaciano = ope.laplaciano_kernel(numero)
+            #ope.mostrar_imagen(ope.aplicar_filtro(img,laplaciano))
+
+            imagen_filtrada = ope.aplicar_filtro(img,laplaciano).astype(np.uint8)  # Combinamos canales y convertimos a uint8
+            generar_imagen(imagen_filtrada)
+
+        elif primera_palabra == "Sobel":
+            ultima_palabra = seleccion.split()[-1]
+            sobel = ope.sobel_kernel(ultima_palabra)
+            #ope.mostrar_imagen(ope.aplicar_filtro(img,sobel))
+
+            imagen_filtrada = ope.aplicar_filtro(img,sobel).astype(np.uint8)  # Combinamos canales y convertimos a uint8
+            generar_imagen(imagen_filtrada)
+
         else:
             mensaje = f"Debes selecionar una de las opciones"
             messagebox.showinfo("Identificación", mensaje)
@@ -72,7 +117,7 @@ frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 frame.grid_rowconfigure(0, weight=1)
 frame.grid_columnconfigure(0, weight=1)
 
-# Inicializar la variable para guardar la ruta de la imagen
+# Inicializamos la variable para guardar la ruta de la imagen
 image_path = ""
 
 # Etiquetas de Titulo
@@ -142,11 +187,18 @@ label_a = ttk.Label(frame2, text="Filtro a aplicar: ", font=('Arial',10))
 label_a.grid(row=0, column=0, padx=5, pady=5)
 
 # Crear el Combobox con las opciones
-opciones = ["Plano",
+opciones = [
             "Bartlett 3x3",
             "Bartlett 5x5",
             "Bartlett 7x7",
-            "Sobel las 8 orientaciones"]
+            "Gaussiano 5x5",
+            "Gaussiano 7x7",
+            "Laplaciano v4",
+            "Laplaciano v8",
+            "Sobel 3x3 Oeste",
+            "Sobel 3x3 Este",
+            "Sobel 3x3 Norte",
+            "Sobel 3x3 Sur"]
 combobox = ttk.Combobox(frame2, values=opciones, state="readonly")
 combobox.set("Seleccion")  # Texto predeterminado en el Combobox
 combobox.grid(row=0, column=1, padx=5, pady=5)
