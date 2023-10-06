@@ -268,6 +268,12 @@ def lineal_a_tarzos(yiq,ymin,ymax):
     return yiq
 
 #PROCESAMIENTO POR CONVOLUCION
+def _convolution1(image, kernel = np.ones((1,1))):
+    convolved = np.zeros((np.array(image.shape)-np.array(kernel.shape)+1))
+    for x in range(convolved.shape[0]):
+        for y in range(convolved.shape[1]):
+            convolved[x,y] = (image[x:x+kernel.shape[0],y:y+kernel.shape[1]]*kernel).sum()
+    return convolved
 def bartlett_kernel(size):
     if size % 2 == 0:
         raise ValueError("El tamaño del kernel debe ser impar.")
@@ -281,7 +287,8 @@ def bartlett_kernel(size):
     kernel[:mid + 1, mid + 1:] = np.flip(kernel[:mid + 1, :mid], axis=1)
     kernel[mid + 1:, :] = np.flip(kernel[:mid, :], axis=0)
 
-    return kernel
+    return kernel / np.sum(kernel)
+
 def gaussiano_kernel(dim):
     if dim <= 0:
         raise ValueError("La dimensión debe ser mayor que 0")
@@ -293,7 +300,8 @@ def gaussiano_kernel(dim):
         f[1:-1] = ar[:-1] + ar[1:]
         ar = f
 
-    return ar.reshape(-1, 1) * ar
+    kernel = ar.reshape(-1, 1) * ar
+    return kernel / np.sum(kernel)
 
 def laplaciano_kernel(v):
     kernel = None
@@ -314,16 +322,23 @@ def sobel_kernel(orientacion):
     f_flat = f.flatten()  # Convertmos 'f' en un array unidimensional
 
     if orientacion == 'Oeste':
-        kernel[:, 0] = f_flat * (-1)
-        kernel[:, 2] = f_flat
-    elif orientacion == 'Este':
         kernel[:, 0] = f_flat
         kernel[:, 2] = f_flat * (-1)
+    elif orientacion == 'Este':
+        kernel[:, 0] = f_flat * (-1)
+        kernel[:, 2] = f_flat
     elif orientacion == 'Norte':
-        kernel[0, :] = f_flat * (-1)
-        kernel[2, :] = f_flat
-    else:
         kernel[0, :] = f_flat
         kernel[2, :] = f_flat * (-1)
+    else:
+        kernel[0, :] = f_flat * (-1)
+        kernel[2, :] = f_flat
 
     return kernel
+
+def aplicar_filtro(img,kernel):
+    R = _convolution1(img[:, :, 0], kernel)
+    G = _convolution1(img[:, :, 1], kernel)
+    B = _convolution1(img[:, :, 2], kernel)
+    # Apila los canales R, G y B en una sola imagen
+    return RGB_to_bytes(np.dstack((R, G, B)))
