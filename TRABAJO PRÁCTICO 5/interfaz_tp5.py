@@ -17,13 +17,14 @@ def generar_imagen(imagen):
     # Generarmos un nombre de archivo único basado en la fecha y hora actual
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     global nombre_archivo
-    nombre_archivo = f"imagen_filtrada_{timestamp}.ppm"
+    nombre_archivo = f"imagen_filtrada_{timestamp}.png"
 
     # Guardarmos la imagen filtrada en formato PPM con el nombre único
-    imageio.imwrite(nombre_archivo, imagen)
+    imageio.imwrite(nombre_archivo, imagen.astype(np.uint8))
 
     # Cargamos la imagen filtrada en PhotoImage y mostramos en el Label
     imagen_tk = ImageTk.PhotoImage(file=nombre_archivo)
+
     label_imagen2.config(image=imagen_tk)
     label_imagen2.image = imagen_tk
 def obtener_numero(cadena):
@@ -79,13 +80,13 @@ def manipulate_image():
             #generar_imagen(imagen_filtrada)
 
         elif primera_palabra == "Dilatacion":
-            imagen_filtrada =ope.im_dilate(img,np.ones((3,3),bool))
+            imagen_filtrada = ope.im_dilate(img, np.ones((3,3),bool))
             plt.imshow(imagen_filtrada, 'gray')
             plt.show()
             #generar_imagen(imagen_filtrada)
 
         elif primera_palabra == "Apertura":
-            imagen_filtrada =ope.im_open(img,np.ones((3,3),bool))
+            imagen_filtrada = ope.im_open(img, np.ones((3,3),bool))
             plt.imshow(imagen_filtrada, 'gray')
             plt.show()
             #generar_imagen(imagen_filtrada)
@@ -95,6 +96,12 @@ def manipulate_image():
             plt.imshow(imagen_filtrada, 'gray')
             plt.show()
             #generar_imagen(imagen_filtrada)
+
+        elif primera_palabra == "Mediana":
+            imagen_filtrada = ope.im_mediana(img, np.ones((3, 3), bool))
+            plt.imshow(imagen_filtrada, 'gray')
+            plt.show()
+            # generar_imagen(imagen_filtrada)
         else:
             mensaje = f"Debes selecionar una de las opciones"
             messagebox.showinfo("Identificación", mensaje)
@@ -219,6 +226,7 @@ opciones = ["Erosion",
             "Dilatacion",
             "Apertura",
             "Cierre",
+            "Mediana",
             "Bartlett 3x3",
             "Bartlett 5x5",
             "Bartlett 7x7",
