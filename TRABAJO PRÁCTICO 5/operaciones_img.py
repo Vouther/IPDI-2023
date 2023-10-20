@@ -360,13 +360,23 @@ def _convolution(image, kernel = np.ones((1,1)), option = 'sum'):
                     convolved[x,y] = (image[x:x+kernel.shape[0],y:y+kernel.shape[1]]*kernel).min()
     return convolved
 
+def _morph_gray(im, se, op):
+    result = np.zeros(im.shape)
+    offset = (np.array(se.shape)-1)//2
+    im = np.pad(im,[(offset[0],offset[0]),(offset[1],offset[1])],'edge')
+    for y, x in np.ndindex(result.shape):
+        pixels = im[y: y + se.shape[0], x: x + se.shape[1]][se]
+        result[y, x] = op(pixels)
+    return result
 
 def im_dilate(image,se):
-    dilated = _convolution(image,se,'min')
+    #dilated = _convolution(image,se,'min')
+    dilated = _morph_gray(image, se, np.max)
     return dilated
 
 def im_erode(image,se):
-    eroded = _convolution(image,se,'max')
+    #eroded = _convolution(image,se,'max')
+    eroded = _morph_gray(image, se, np.min)
     return eroded
 
 def im_open(im, se):
@@ -374,5 +384,9 @@ def im_open(im, se):
 
 def im_close(im, se):
     return im_erode(im_dilate(im, se), se)
+
+def im_mediana(image, se):
+    median = _morph_gray(image, se, np.median)
+    return median
 
 
