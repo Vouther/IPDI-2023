@@ -1,5 +1,8 @@
 # Creamos una clase que sea nuestro rastreador
 
+import math
+
+
 class Rastreador:
     # Inicializamos las variables
 
@@ -34,7 +37,7 @@ class Rastreador:
 
             # Si detecta un nuevo objeto le asignmos el ID a es objeto
             if objeto_det is False:
-                self, centro_puntos[self.id_count] = (cx, cy)  # Almacenamos la coordenada w e y
+                self.centro_puntos[self.id_count] = (cx, cy)  # Almacenamos la coordenada w e y
                 objetos_id.append([x, y, w, h, self.id_count])  # Agregamos el objeto con su ID
                 self.id_count = self.id_count + 1  # Aumentamos el ID
 
