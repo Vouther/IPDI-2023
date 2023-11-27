@@ -95,6 +95,8 @@ def cerrar_aplicacion():
     ventana.destroy() #Liberación de recursos y cierre adecuado
 
 def copiar_imagen():
+    global image_path
+
     if nombre_archivo == "":
         mensaje = "Debes aplicar un filtro para poder copiar."
         messagebox.showinfo("Identificación", mensaje)
@@ -109,6 +111,9 @@ def copiar_imagen():
         imagen_tk = ImageTk.PhotoImage(imagen_cop)
         label_imagen.config(image=imagen_tk)
         label_imagen.image = imagen_tk
+
+        #Actualizamos la tura de la imagen a procesar
+        image_path = nombre_archivo
 
     # Actualizamos el fondo de la imagen filtrada
     imagen_tk = ImageTk.PhotoImage(imagen_pillow)
