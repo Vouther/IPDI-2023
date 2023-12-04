@@ -337,8 +337,11 @@ def sobel_kernel(orientacion):
     return kernel
 
 def aplicar_filtro(img,kernel):
-    R = _convolution1(img[:, :, 0], kernel)
-    G = _convolution1(img[:, :, 1], kernel)
-    B = _convolution1(img[:, :, 2], kernel)
+    yiq = RGB_to_YIQ(img)
+
+    Y = _convolution1(yiq[:, :, 0], kernel)
+
+    Y = np.clip(Y, 0, 1)  # Asegura que Y' esté en [0, 1]
+
     # Apila los canales R, G y B en una sola imagen
-    return RGB_to_bytes(np.dstack((R, G, B)))
+    return (Y*255).astype(int)
