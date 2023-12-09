@@ -37,13 +37,7 @@ def generar_imagen(imagen):
     # Cargar la imagen convertida en PhotoImage y mostrarla en el Label
     label_imagen2.config(image=imagen_tk)
     label_imagen2.image = imagen_tk
-def obtener_numero(cadena):
-    # Utilizarmos una expresión regular para buscar el último número en la cadena
-    numero = re.search(r'\d+$', cadena)
-    if numero:
-        return int(numero.group())  # Convertirmos el número encontrado a entero
-    else:
-        return None  # Devolvermos None si no se encontró ningún número
+
 def manipulate_image():
     seleccion = combobox.get()
     primera_palabra = seleccion.split()[0]
@@ -51,8 +45,8 @@ def manipulate_image():
     if image_path != "":
         img = imageio.imread(image_path)
         img = ope.normalize_rgb(img)
-        #yiq = ope.RGB_to_YIQ(img)
-        numero = obtener_numero(seleccion)
+
+        print('Tamaño: ',img.shape)
 
         if primera_palabra == "Erosion":
             imagen_filtrada = ope.im_erode(img, np.ones((3,3),bool))
