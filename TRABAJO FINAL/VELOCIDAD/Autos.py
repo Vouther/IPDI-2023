@@ -9,7 +9,7 @@ seguimiento = Rastreador()
 # Abrir el video
 cap = cv2.VideoCapture("autos.mp4")
 
-deteccion = cv2.createBackgroundSubtractorMOG2(history=10000, varThreshold=100)
+deteccion = cv2.createBackgroundSubtractorMOG2(history=10000, varThreshold=10)
 # PARA VERIFICAR LA RESOLUCIÓN DEL VIDEO
 # Verificar si el video se ha abierto correctamente
 '''if not cap.isOpened():
@@ -66,9 +66,9 @@ else:
         zona = cv2.bitwise_and(resized_frame, resized_frame, mask=mask)
 
         #Mostramos con lineas la zona de interes
-        areag = [(583, 285), (665, 285), (1068, 725), (289, 725)]
-        area3 = [(583, 285), (665, 285), (722, 358), (534, 358)]
-        area2 = [(534, 358), (722, 358), (839, 487), (451, 487)]
+        areag = [(583, 285), (650, 285), (1068, 725), (289, 725)]
+        area3 = [(583, 285), (650, 285), (718, 358), (534, 358)]
+        area2 = [(534, 358), (718, 358), (839, 487), (451, 487)]
         area1 = [(451, 487), (839, 487), (972, 627), (359, 627)]
         
 
@@ -84,32 +84,24 @@ else:
 
         # Creamos una mascara
         mascara = deteccion.apply(zona)
-        # Aplicamos suavizado
-        filtro = cv2.GaussianBlur(mascara, (11, 11), 0)
-
-        # Umbral de binarizacion
-        _, umbral = cv2.threshold(filtro, 50, 255, cv2.THRESH_BINARY)
-
-        # Dilatamos los pixeles
-        dila = cv2.dilate(umbral, np.ones((3, 3)))
-
-        # Creamos un kernel (mascar)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-
-        # Aplicamos el kernel para juntar los pixeles dispersos
-        cerrar = cv2.morphologyEx(dila, cv2.MORPH_CLOSE, kernel)
-
-        #extrae los contornos de los objetos
-        contornos, _ = cv2.findContours(cerrar, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # aplicamos filtro gausseano para eliminar ruido
+        filtro = cv2.GaussianBlur(mascara, (9, 9), 0)
+        # umbralizamos para binarizar las imagenes
+        _, umbral = cv2.threshold(filtro, 150, 255, cv2.THRESH_BINARY)
+        # aplicamos la medíana para eliminar ruido
+        mediana = cv2.medianBlur(umbral, 3)
+        # dilatamos para eliminar partes de color negro dentro de las imagenes
+        dila = cv2.dilate(mediana, np.ones((5, 5)))
+        # obtenemos los contornos de los autos
+        contornos, _ = cv2.findContours(dila, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         detecciones = []  # Lista donde vamos a almacenar la info de los contornos
 
         # Eliminamos los contornos pequeños
         for cont in contornos:
-
             #extrae el área de todos los contonos que hayan
             area = cv2.contourArea(cont)
-            if area > 900:#si el área es mayor a 1800 proceso
-                # cv2.drawContours(zona,[cont], -1, (255,255,0), 2)
+            if area > 300:#si el área es mayor a 1800 proceso
+                cv2.drawContours(zona,[cont], -1, (255,255,0), 2)
                 #toma las medidas de los objetos, los identifica como un rectángulo
                 x, y, ancho, alto = cv2.boundingRect(cont)
 
@@ -171,19 +163,18 @@ else:
 
                         vel = 18.40 / car0[id]
                         vel = vel * 3.6
-
+                    
                     # Mostramos el numero
-                    cv2.rectangle(resized_frame, (x, y - 10), (x + 100, y - 50), (0, 0, 255), -1)
-                    cv2.putText(resized_frame, str(int(vel)) + " KM / H", (x, y - 35), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255),2)
+                    cv2.rectangle(resized_frame, (x, y - 10), (x + 70, y - 50), (0, 0, 255), -1)
+                    cv2.putText(resized_frame, str(int(vel)) + " KM / H", (x, y - 35), cv2.FONT_HERSHEY_PLAIN, 0.8, (0, 0, 0),2)
 
                 # Mostramos el numero
-                cv2.putText(resized_frame, str(id), (x, y - 15), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
+                cv2.putText(resized_frame, str(id), (x, y - 15), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 2)
 
 
         # Mostrar el fotograma redimensionado
         cv2.imshow("Video", resized_frame)
-        # Mostramos la mascar
-        ##cv2.imshow("Mascara", zona)
+      
         # Salir del bucle si se presiona la tecla 'q'
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -191,3 +182,9 @@ else:
     # Liberar la captura de video y cerrar la ventana
     cap.release()
     cv2.destroyAllWindows()
+
+
+
+
+
+
