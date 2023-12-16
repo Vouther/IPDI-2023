@@ -7,7 +7,7 @@ import time
 seguimiento = Rastreador()
 
 # Abrir el video
-cap = cv2.VideoCapture("C:/Users/Margarita Zerpa/Documents/INTRODUCCIÓN AL PROCESAMIENTO DE IMAGENES/TRABAJOS PRACTICOS/IPDI-2023/TRABAJO FINAL/VELOCIDAD/autos.mp4")
+cap = cv2.VideoCapture("autos.mp4")
 
 deteccion = cv2.createBackgroundSubtractorMOG2(history=10000, varThreshold=10)
 # PARA VERIFICAR LA RESOLUCIÓN DEL VIDEO

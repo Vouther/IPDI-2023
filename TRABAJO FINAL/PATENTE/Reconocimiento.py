@@ -2,7 +2,9 @@ import numpy as np
 import cv2
 import pytesseract
 import skimage
+
 pytesseract.pytesseract.tesseract_cmd = r'C:/Program Files/Tesseract-OCR/tesseract.exe'
+
 
 class LPR:
     def __init__(self, min_w=60, max_w=140, min_h=20, max_h=60, ratio=3.07692307692):
@@ -16,7 +18,7 @@ class LPR:
     los valores de min_w, max_w, min_h y max_h en la clase LPR deben interpretarse como distancias
     entre los puntos de los píxeles en la imagen. Estos valores determinan los límites permitidos
     para el ancho y el alto de los rectángulos de contorno que se están buscando en la detección de la patente.
-    
+
     min_w y max_w: Representan el ancho mínimo y máximo permitido del rectángulo en píxeles.
     min_h y max_h: Representan la altura mínima y máxima permitida del rectángulo en píxeles.
     '''
@@ -51,6 +53,10 @@ class LPR:
             # Verifica si el polígono tiene cuatro esquinas (es aproximadamente rectangular)
             # Tambien se verifica el ancho (with)
             if len(approx) == 4 and (69 <= w <= 130) and (16 <= h <= 50):
+                # Si se corresponde a una patente nueva
+                rectangular_contours.append(approx)
+            elif len(approx) == 4 and (48 <= w <= 70) and (20 <= h <= 30):
+                # Si se corresponde a una patente vieja
                 rectangular_contours.append(approx)
 
         return rectangular_contours
@@ -65,7 +71,7 @@ class LPR:
     # AQUI COMENZAMOS A TRATAR LA ZONA DE LA PATEMTE
     def crop_license_plate(self, img, license):
         x, y, w, h = cv2.boundingRect(license)
-        return img[y:y+h,x:x+w]
+        return img[y:y + h, x:x + w]
 
     def clear_border(self, img):
         return skimage.segmentation.clear_border(img)
@@ -78,32 +84,36 @@ class LPR:
         cv2.waitKey(0)  # Espera hasta que una tecla sea presionada
         cv2.destroyAllWindows()  # Cierra todas las ventanas abiertas
 
-    # FUNCION PRINCIPAL
     def read_license(self, img, psm=7):
+        # Suponemos que debe encontrar 7 caracteres
         alphanumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         options = "-c tessedit_char_whitelist={}".format(alphanumeric)
         options += " --psm {}".format(psm)
 
         gray = self.grayscale(img)
-        #self.view_result(gray)
-
         thresh = self.apply_threshold(gray)
-        #self.view_result(thresh)
-
         contours = self.find_contours(thresh)
-        #self.view_result(contours)
-
         candidates = self.filter_candidates(contours)
 
         if candidates:
             license = candidates[0]
-            if len(candidates) > 1:
+
+            if len(candidates) >= 1:
+                # Si detecto los contornos con el umbral
                 license = self.get_lowest_candidate(candidates)
+            else:
+                #Sino se aplica un umbral adaptativo
+                thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 7, 7)
+                contours = self.find_contours(thresh)
+                candidates = self.filter_candidates(contours)
+                license = self.get_lowest_candidate(candidates)
+
             cropped = self.crop_license_plate(gray, license)
             thresh_cropped = self.apply_adaptive_threshold(cropped)
             clear_border = self.clear_border(thresh_cropped)
             final = self.invert_image(clear_border)
             txt = pytesseract.image_to_string(final, config=options)
+
             return txt
         else:
-            return "No license plate found"
+            return "NoReading"
